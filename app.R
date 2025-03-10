@@ -1,7 +1,10 @@
-# Improved Version of 'Hello Shiny'
+# Shiny app for Airbnb listings in Rio de Janeiro
 library(shiny)
 library(tidyverse)
+library(bslib)
+library(shinythemes)
 
+# Load data
 listings <- read_csv("data/listings.csv")
 
 # Clean the price column
@@ -12,40 +15,94 @@ listings <- listings %>%
   filter(price > 0 & price < quantile(price, 0.99)) # Remove outliers
 
 
-# Define UI for application that draws a histogram
-ui <- fluidPage(
-  titlePanel("Airbnb listings on Rio de Janeiro - Brazil"),
-  
-  sidebarLayout(
-    sidebarPanel(
-      sliderInput("bins", "Number of bins:", min = 5, max = 25, value = 10),
-      selectInput("color", "Choose a color:", choices = c("Blue" = "#007bc2", "Red" = "#c20000", "Green" = "#00c244")),
-      textInput("title", "Enter plot title:", value = "Histogram of Prices")
-    ),
-    
-    mainPanel(
-      plotOutput("distPlot")
+# Define UI
+ui <- 
+  page_fluid(
+    theme = bs_theme(bootswatch = "superhero"),
+    layout_sidebar(
+      sidebar = sidebar(
+        sliderInput("bins", "Number of bins:", min = 5, max = 50, value = 25),
+        selectInput("color", "Choose a color:", choices = c("Green" = "#00c244", "Blue" = "#007bc2")),
+        selectInput("theme", "Choose a theme:", choices = c("Classic", "Minimal", "Dark"))
+      ),
+      layout_columns(
+        col_widths = c(4, 4, 4),
+        value_box("Mean Price", textOutput("mean_price")),
+        value_box("Median Price", textOutput("median_price")),
+        value_box("Total Listings", textOutput("listings_count"))
+      ),
+      layout_columns(
+        col_widths = c(4, 4, 4),
+        card(
+          card_header("Histogram"),
+          full_screen = T,
+          card_body(plotOutput("distPlot"))
+        ),
+        card(
+          card_header("Density Plot"),
+          full_screen = T,
+          card_body(plotOutput("densityPlot"))
+        ),
+        card(
+          card_header("Box Plot"),
+          full_screen = T,
+          card_body(plotOutput("boxPlot"))
+        )
+      )
     )
   )
-)
 
-# Define server logic
+
+# Define server logic -----------------------------------------------------
 server <- function(input, output) {
-  
-  output$distPlot <- renderPlot({
-    x <- listings$price
-    
-    if (length(x) == 0) {
-      return(NULL)  # check if there are no values to plot
-    }
-    
-    bins <- seq(min(x, na.rm = TRUE), max(x, na.rm = TRUE), length.out = input$bins + 1)
-    
-    hist(x, breaks = bins, col = input$color, border = "white",
-         xlab = "Price range of listings",
-         main = input$title)
-  })
-}
+ theme_choice <- reactive({
+   switch(input$theme,
+          "Classic" = theme_classic(),
+          "Minimal" = theme_minimal(),
+          "Dark" = theme_dark())
+ })
+ 
+ output$mean_price <- renderText({
+   paste("R$", round(mean(listings$price), 2))
+   })
+   
+   output$median_price <- renderText({
+     paste("R$", round(median(listings$price), 2))
+   })
+   
+   output$listings_count <- renderText({
+     paste(nrow(listings))
+   })
+   
+   
+   output$distPlot <- renderPlot({
+     x <- listings$price
+     bins <- seq(min(x), max(x), length.out = input$bins + 1)
+     
+     ggplot(data.frame(x), aes(x)) +
+       geom_histogram(breaks = bins, fill = input$color, color = "white") +
+       labs(x = "Price of the listings, in Brazilian Reais (R$)", y = "Frequency") +
+       theme_choice()
+   })
+   
+   output$densityPlot <- renderPlot({
+     x <- listings$price
+     
+     ggplot(data.frame(x), aes(x)) +
+       geom_density(fill = input$color, alpha = 0.5) +
+       labs(title = "Density Plot of Prices, in Brazilian Reais (R$)", x = "Prices (R$)", y = "Density") +
+       theme_choice()
+   })
+   
+   output$boxPlot <- renderPlot({
+     x <- listings$price
+     
+     ggplot(data.frame(x), aes(y = x)) +
+       geom_boxplot(fill = input$color, color = "black") +
+       labs(title = "Boxplot of Prices, in Brazilian Reais (R$)", y = "Prices (R$)") +
+       theme_choice()
+   })
+ }
 
 
 # Run the application

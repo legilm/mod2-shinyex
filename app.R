@@ -4,6 +4,7 @@ library(tidyverse)
 
 listings <- read_csv("data/listings.csv")
 
+# Clean the price column
 listings$price <- as.numeric(sub(",", ".", listings$price, fixed = TRUE)) # Replace comma by dot
 listings$price <- as.numeric(gsub("[^0-9.,]", "", listings$price)) # Remove non-numeric characters
 listings <- listings %>%

@@ -5,7 +5,7 @@ library(bslib)
 library(shinythemes)
 
 # Load data
-listings <- read_csv("data/listings.csv")
+listings <- rio::import("data/listings.csv")
 
 # Clean the price column
 listings$price <- as.numeric(sub(",", ".", listings$price, fixed = TRUE)) # Replace comma by dot

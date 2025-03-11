@@ -3,6 +3,7 @@ library(shiny)
 library(tidyverse)
 library(bslib)
 library(shinythemes)
+library(shinydashboard)
 
 # Load data
 listings <- rio::import("data/listings.csv")
@@ -16,41 +17,62 @@ listings <- listings %>%
 
 
 # Define UI
-ui <- 
-  page_fluid(
-    theme = bs_theme(bootswatch = "superhero"),
-    layout_sidebar(
-      sidebar = sidebar(
-        sliderInput("bins", "Number of bins:", min = 5, max = 50, value = 25),
-        selectInput("color", "Choose a color:", choices = c("Green" = "#00c244", "Blue" = "#007bc2")),
-        selectInput("theme", "Choose a theme:", choices = c("Classic", "Minimal", "Dark"))
+ui <- dashboardPage(
+  dashboardHeader(title = "Rio Airbnb Dashboard"),
+  dashboardSidebar(
+    sliderInput("bins", "Number of bins:", min = 5, max = 50, value = 25),
+    selectInput("color", "Choose a color:", choices = c("Green" = "#00c244", "Blue" = "#007bc2")),
+    selectInput("theme", "Choose a theme:", choices = c("Classic", "Minimal", "Dark"))
+  ),
+  dashboardBody(
+    fluidRow(
+      valueBox(
+        width = 4,
+        value = textOutput("mean_price"),
+        subtitle = "Mean Price",
+        icon = icon("dollar-sign")
       ),
-      layout_columns(
-        col_widths = c(4, 4, 4),
-        value_box("Mean Price", textOutput("mean_price")),
-        value_box("Median Price", textOutput("median_price")),
-        value_box("Total Listings", textOutput("listings_count"))
+      valueBox(
+        width = 4,
+        value = textOutput("median_price"),
+        subtitle = "Median Price",
+        icon = icon("dollar-sign")
       ),
-      layout_columns(
-        col_widths = c(4, 4, 4),
-        card(
-          card_header("Histogram"),
-          full_screen = T,
-          card_body(plotOutput("distPlot"))
-        ),
-        card(
-          card_header("Density Plot"),
-          full_screen = T,
-          card_body(plotOutput("densityPlot"))
-        ),
-        card(
-          card_header("Box Plot"),
-          full_screen = T,
-          card_body(plotOutput("boxPlot"))
-        )
+      valueBox(
+        width = 4,
+        value = textOutput("listings_count"),
+        subtitle = "Total Listings",
+        icon = icon("list")
+      )
+    ),
+    fluidRow(
+      box(
+        width = 4,
+        title = "Histogram",
+        status = "primary",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        plotOutput("distPlot")
+      ),
+      box(
+        width = 4,
+        title = "Density Plot",
+        status = "primary",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        plotOutput("densityPlot")
+      ),
+      box(
+        width = 4,
+        title = "Box Plot",
+        status = "primary",
+        solidHeader = TRUE,
+        collapsible = TRUE,
+        plotOutput("boxPlot")
       )
     )
   )
+)
 
 
 # Define server logic -----------------------------------------------------

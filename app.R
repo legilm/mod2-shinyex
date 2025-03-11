@@ -1,9 +1,7 @@
 # Shiny app for Airbnb listings in Rio de Janeiro
 library(shiny)
 library(tidyverse)
-library(bslib)
-library(shinythemes)
-library(shinydashboard)
+library(rio)
 
 # Load data
 listings <- rio::import("data/listings.csv")
@@ -17,60 +15,60 @@ listings <- listings %>%
 
 
 # Define UI
-ui <- dashboardPage(
-  dashboardHeader(title = "Rio Airbnb Dashboard"),
-  dashboardSidebar(
-    sliderInput("bins", "Number of bins:", min = 5, max = 50, value = 25),
-    selectInput("color", "Choose a color:", choices = c("Green" = "#00c244", "Blue" = "#007bc2")),
-    selectInput("theme", "Choose a theme:", choices = c("Classic", "Minimal", "Dark"))
+ui <- page_sidebar(
+  title = "Rio Airbnb Dashboard",
+  sidebar = sidebar(
+    helpText("This dashboard shows the distribution of prices for Airbnb listings in Rio de Janeiro."),
+    sliderInput("bins", 
+                label = "Number of bins:", 
+                min = 5, 
+                max = 50, 
+                value = 25),
+    selectInput(
+      "color", 
+      label = "Choose a color:", 
+      choices = 
+        c("Green" = "#00c244", 
+          "Blue" = "#007bc2")),
+    selectInput(
+      "theme", 
+      label = "Choose a theme:", 
+      choices = 
+        c("Classic", 
+          "Minimal", 
+          "Dark")),
   ),
-  dashboardBody(
-    fluidRow(
-      valueBox(
-        width = 4,
-        value = textOutput("mean_price"),
-        subtitle = "Mean Price",
-        icon = icon("dollar-sign")
-      ),
-      valueBox(
-        width = 4,
-        value = textOutput("median_price"),
-        subtitle = "Median Price",
-        icon = icon("dollar-sign")
-      ),
-      valueBox(
-        width = 4,
-        value = textOutput("listings_count"),
-        subtitle = "Total Listings",
-        icon = icon("list")
-      )
-    ),
-    fluidRow(
-      box(
-        width = 4,
-        title = "Histogram",
-        status = "primary",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        plotOutput("distPlot")
-      ),
-      box(
-        width = 4,
-        title = "Density Plot",
-        status = "primary",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        plotOutput("densityPlot")
-      ),
-      box(
-        width = 4,
-        title = "Box Plot",
-        status = "primary",
-        solidHeader = TRUE,
-        collapsible = TRUE,
-        plotOutput("boxPlot")
-      )
-    )
+
+  
+  fluidRow(
+    column(4,
+           card(
+             card_header("Mean Price"),
+             textOutput("mean_price"))),
+    column(4,
+           card(
+           card_header("Median Price"),
+           textOutput("median_price"))),
+    column(4,
+            card(
+              card_header("Listings Count"),
+              textOutput("listings_count"))),
+           
+  ),
+  
+  fluidRow(
+    column(4,
+           card(
+             card_header("Price Distribution"),
+             plotOutput("distPlot"))),
+    column(4,
+           card(
+             card_header("Density Plot"),
+             plotOutput("densityPlot"))),
+    column(4,
+           card(
+             card_header("Box Plot"),
+             plotOutput("boxPlot"))),
   )
 )
 

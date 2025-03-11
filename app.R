@@ -1,9 +1,7 @@
 # Shiny app for Airbnb listings in Rio de Janeiro
 library(shiny)
 library(tidyverse)
-library(bslib)
-library(shinythemes)
-library(shinydashboard)
+library(bs4Dash)
 
 # Load data
 listings <- rio::import("data/listings.csv")
@@ -30,13 +28,13 @@ ui <- dashboardPage(
         width = 4,
         value = textOutput("mean_price"),
         subtitle = "Mean Price",
-        icon = icon("dollar-sign")
+        icon = icon("brazilian-real-sign")
       ),
       valueBox(
         width = 4,
         value = textOutput("median_price"),
         subtitle = "Median Price",
-        icon = icon("dollar-sign")
+        icon = icon("brazilian-real-sign")
       ),
       valueBox(
         width = 4,

@@ -28,13 +28,13 @@ ui <- dashboardPage(
         width = 4,
         value = textOutput("mean_price"),
         subtitle = "Mean Price",
-        icon = icon("dollar-sign")
+        icon = icon("brazilian-real-sign")
       ),
       valueBox(
         width = 4,
         value = textOutput("median_price"),
         subtitle = "Median Price",
-        icon = icon("dollar-sign")
+        icon = icon("brazilian-real-sign")
       ),
       valueBox(
         width = 4,

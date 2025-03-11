@@ -1,8 +1,6 @@
 # Shiny app for Airbnb listings in Rio de Janeiro
 library(shiny)
 library(tidyverse)
-library(bslib)
-library(shinythemes)
 library(shinydashboard)
 
 # Load data

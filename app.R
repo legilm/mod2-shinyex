@@ -2,6 +2,10 @@
 library(shiny)
 library(tidyverse)
 library(rio)
+library(shinydashboard)
+library(bslib)
+library(histoslider)
+library(plotly)
 
 # Load data
 listings <- rio::import("data/listings.csv")
@@ -19,11 +23,13 @@ ui <- page_sidebar(
   title = "Rio Airbnb Dashboard",
   sidebar = sidebar(
     helpText("This dashboard shows the distribution of prices for Airbnb listings in Rio de Janeiro."),
-    sliderInput("bins", 
-                label = "Number of bins:", 
-                min = 5, 
-                max = 50, 
-                value = 25),
+     sliderInput(
+      "bins",
+      label = "Number of bins:",
+      min = 5,
+      max = 50,
+      value = 25
+     ),
     selectInput(
       "color", 
       label = "Choose a color:", 
@@ -53,7 +59,6 @@ ui <- page_sidebar(
             card(
               card_header("Listings Count"),
               textOutput("listings_count"))),
-           
   ),
   
   fluidRow(
@@ -69,7 +74,7 @@ ui <- page_sidebar(
            card(
              card_header("Box Plot"),
              plotOutput("boxPlot"))),
-  )
+  ),
 )
 
 

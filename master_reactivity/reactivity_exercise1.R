@@ -39,6 +39,7 @@ server <- function(input, output, session) {
     iris %>%
       filter(Species == input$species)
   })
+  
   observe({
     cat("Selected species: ", input$species, "\n")
   })
@@ -48,7 +49,8 @@ server <- function(input, output, session) {
     filtered_by_species() %>%
       filter(Sepal.Length >= input$sepal_length[1] & 
                Sepal.Length <= input$sepal_length[2])
-  },)
+  },
+  )
   
   
   output$iris_table <- renderTable({

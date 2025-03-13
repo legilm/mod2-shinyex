@@ -38,7 +38,7 @@ ui <- page_sidebar(
           "Minimal", 
           "Dark")),
   ),
-
+  
   
   fluidRow(
     column(4,
@@ -47,13 +47,13 @@ ui <- page_sidebar(
              textOutput("mean_price"))),
     column(4,
            card(
-           card_header("Median Price"),
-           textOutput("median_price"))),
+             card_header("Median Price"),
+             textOutput("median_price"))),
     column(4,
-            card(
-              card_header("Listings Count"),
-              textOutput("listings_count"))),
-           
+           card(
+             card_header("Listings Count"),
+             textOutput("listings_count"))),
+    
   ),
   
   fluidRow(
@@ -75,54 +75,54 @@ ui <- page_sidebar(
 
 # Define server logic -----------------------------------------------------
 server <- function(input, output) {
- theme_choice <- reactive({
-   switch(input$theme,
-          "Classic" = theme_classic(),
-          "Minimal" = theme_minimal(),
-          "Dark" = theme_dark())
- })
- 
- output$mean_price <- renderText({
-   paste("R$", round(mean(listings$price), 2))
-   })
-   
-   output$median_price <- renderText({
-     paste("R$", round(median(listings$price), 2))
-   })
-   
-   output$listings_count <- renderText({
-     paste(nrow(listings))
-   })
-   
-   
-   output$distPlot <- renderPlot({
-     x <- listings$price
-     bins <- seq(min(x), max(x), length.out = input$bins + 1)
-     
-     ggplot(data.frame(x), aes(x)) +
-       geom_histogram(breaks = bins, fill = input$color, color = "white") +
-       labs(x = "Price of the listings, in Brazilian Reais (R$)", y = "Frequency") +
-       theme_choice()
-   })
-   
-   output$densityPlot <- renderPlot({
-     x <- listings$price
-     
-     ggplot(data.frame(x), aes(x)) +
-       geom_density(fill = input$color, alpha = 0.5) +
-       labs(title = "Density Plot of Prices, in Brazilian Reais (R$)", x = "Prices (R$)", y = "Density") +
-       theme_choice()
-   })
-   
-   output$boxPlot <- renderPlot({
-     x <- listings$price
-     
-     ggplot(data.frame(x), aes(y = x)) +
-       geom_boxplot(fill = input$color, color = "black") +
-       labs(title = "Boxplot of Prices, in Brazilian Reais (R$)", y = "Prices (R$)") +
-       theme_choice()
-   })
- }
+  theme_choice <- reactive({
+    switch(input$theme,
+           "Classic" = theme_classic(),
+           "Minimal" = theme_minimal(),
+           "Dark" = theme_dark())
+  })
+  
+  output$mean_price <- renderText({
+    paste("R$", round(mean(listings$price), 2))
+  })
+  
+  output$median_price <- renderText({
+    paste("R$", round(median(listings$price), 2))
+  })
+  
+  output$listings_count <- renderText({
+    paste(nrow(listings))
+  })
+  
+  
+  output$distPlot <- renderPlot({
+    x <- listings$price
+    bins <- seq(min(x), max(x), length.out = input$bins + 1)
+    
+    ggplot(data.frame(x), aes(x)) +
+      geom_histogram(breaks = bins, fill = input$color, color = "white") +
+      labs(x = "Price of the listings, in Brazilian Reais (R$)", y = "Frequency") +
+      theme_choice()
+  })
+  
+  output$densityPlot <- renderPlot({
+    x <- listings$price
+    
+    ggplot(data.frame(x), aes(x)) +
+      geom_density(fill = input$color, alpha = 0.5) +
+      labs(title = "Density Plot of Prices, in Brazilian Reais (R$)", x = "Prices (R$)", y = "Density") +
+      theme_choice()
+  })
+  
+  output$boxPlot <- renderPlot({
+    x <- listings$price
+    
+    ggplot(data.frame(x), aes(y = x)) +
+      geom_boxplot(fill = input$color, color = "black") +
+      labs(title = "Boxplot of Prices, in Brazilian Reais (R$)", y = "Prices (R$)") +
+      theme_choice()
+  })
+}
 
 
 # Run the application

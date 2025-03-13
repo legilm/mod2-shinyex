@@ -6,15 +6,7 @@ library(shinyWidgets)
 library(DT)
 
 # Load data
-listings <- rio::import("data/listings.csv")
-
-# Clean the price column
-listings$price <- as.numeric(sub(",", ".", listings$price, fixed = TRUE)) # Replace comma by dot
-listings$price <- as.numeric(gsub("[^0-9.,]", "", listings$price)) # Remove non-numeric characters
-listings <- listings %>%
-  drop_na(price) %>%
-  filter(price > 0 & price < quantile(price, 0.99)) # Remove outliers
-
+listings <- rio::import("data/final_dt.csv")
 
 # Define UI
 ui <- dashboardPage(
@@ -25,7 +17,7 @@ ui <- dashboardPage(
                 min = 5, 
                 max = 50, 
                 value = 25),
-    pickerInput("color", 
+    pickerInput("color",
                 "Choose a color:",
                 choices = c("Green" = "#00c244", "Blue" = "#007bc2", "Red" = "#c20000"),
                 selected = "#00c244",
@@ -39,33 +31,18 @@ ui <- dashboardPage(
                 inputId = "neighbourhood_filter", 
                 label = "Select the neigghbourhood:", 
                 choices = unique(listings$neighbourhood), 
+                selected = unique(listings$neighbourhood)[1],
                 options = pickerOptions(
-                actionsBox = TRUE, 
-                size = 10,
-                selectedTextFormat = "count > 3"), 
+                  actionsBox = TRUE
+                ), 
                 multiple = TRUE
     )
   ),
   dashboardBody(
     fluidRow(
-      valueBox(
-        width = 4,
-        value = textOutput("mean_price"),
-        subtitle = "Mean Price",
-        icon = icon("brazilian-real-sign")
-      ),
-      valueBox(
-        width = 4,
-        value = textOutput("median_price"),
-        subtitle = "Median Price",
-        icon = icon("brazilian-real-sign")
-      ),
-      valueBox(
-        width = 4,
-        value = textOutput("listings_count"),
-        subtitle = "Total Listings",
-        icon = icon("list")
-      )
+      bs4ValueBoxOutput("mean_price"),
+      bs4ValueBoxOutput("median_price"),
+      bs4ValueBoxOutput("listings_count")
     ),
     fluidRow(
       box(
@@ -113,7 +90,7 @@ ui <- dashboardPage(
         DT::DTOutput("listingsTable")
       )
     )
-)
+  )
 )
 
 # Define server logic -----------------------------------------------------
@@ -125,25 +102,49 @@ server <- function(input, output) {
           "Dark" = theme_dark())
  })
  
- output$mean_price <- renderText({
-   paste("R$", round(mean(listings$price), 2))
-   })
-   
-   output$median_price <- renderText({
-     paste("R$", round(median(listings$price), 2))
-   })
-   
-   output$listings_count <- renderText({
-     paste(nrow(listings))
-   })
-   
+
+# Value Boxes -------------------------------------------------------------
+
+ 
+ output$mean_price <- renderValueBox({
+   valueBox(
+     width = 4,
+     value = paste("R$", round(mean(listings$price), 2)),
+     subtitle = "Mean Price",
+     icon = icon("brazilian-real-sign")
+   )
+ })
+ 
+ output$median_price <- renderValueBox({
+   valueBox(
+     width = 4,
+     value = paste("R$", round(median(listings$price), 2)),
+     subtitle = "Median Price",
+     icon = icon("brazilian-real-sign")
+   )
+ })
+ 
+ output$listings_count <- renderValueBox({
+   valueBox(
+     width = 4,
+     value = nrow(listings),
+     subtitle = "Total Listings",
+     icon = icon("list")
+   )
+ })
+ 
+ 
+
+# Rest --------------------------------------------------------------------
+
+ 
    
    output$distPlot <- renderPlot({
      x <- listings$price
      bins <- seq(min(x), max(x), length.out = input$bins + 1)
      
      ggplot(data.frame(x), aes(x)) +
-       geom_histogram(breaks = bins, fill = input$color, color = "white") +
+       geom_histogram(breaks = bins, color = "white", fill = input$color) +
        labs(x = "Price of the listings, in Brazilian Reais (R$)", y = "Frequency") +
        theme_choice()
    })
@@ -152,7 +153,7 @@ server <- function(input, output) {
      x <- listings$price
 
      ggplot(data.frame(x), aes(x)) +
-       geom_density(fill = input$color, alpha = 0.5) +
+       geom_density(alpha = 0.5, fill = input$color) +
        labs(title = "Density Plot of Prices, in Brazilian Reais (R$)", x = "Prices (R$)", y = "Density") +
        theme_choice()
    })
@@ -161,7 +162,7 @@ server <- function(input, output) {
      x <- listings$price
      
      ggplot(data.frame(x), aes(y = x)) +
-       geom_boxplot(fill = input$color, color = "black") +
+       geom_boxplot(color = "black", fill = input$color) +
        labs(title = "Boxplot of Prices, in Brazilian Reais (R$)", y = "Prices (R$)") +
        theme_choice()
    })
@@ -178,17 +179,16 @@ server <- function(input, output) {
    })
 
    filtered_listings <- reactive({
-     if (length(input$neighbourhood_filter) == 0) {
-       listings
-     } else {
-       listings %>% 
-         filter(neighbourhood %in% input$neighbourhood_filter)
-     }
+    req(input$neighbourhood_filter)
+     listings %>% 
+       filter(neighbourhood %in% input$neighbourhood_filter) |> 
+       select(name, neighbourhood, room_type, price, number_of_reviews, availability_365, number_of_reviews_ltm, calculated_host_listings_count)
    })
+   
+   
    output$listingsTable <- DT::renderDataTable({
      DT::datatable(
-       filtered_listings() %>%
-         select(name, neighbourhood, room_type, price, number_of_reviews, availability_365, number_of_reviews_ltm, calculated_host_listings_count),
+       filtered_listings(),
        options = list(pageLength = 10, autoWidth = TRUE),
        rownames = FALSE
      )
@@ -197,4 +197,4 @@ server <- function(input, output) {
 
 
 # Run the application
-shinyApp(ui, server, options = list(display.mode = "showcase"))
+shinyApp(ui, server)

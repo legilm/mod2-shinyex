@@ -4,6 +4,7 @@ library(tidyverse)
 library(bs4Dash)
 library(shinyWidgets)
 library(DT)
+library(plotly)
 
 # Load data
 listings <- rio::import("data/listings.csv")
@@ -91,13 +92,14 @@ ui <- dashboardPage(
     fluidRow(
       box(
         width = 12,
-        title = "Price vs availability on next 365 days",
+        title = "Price vs Availability on Next 365 Days",
         status = "primary",
         solidHeader = TRUE,
         collapsible = TRUE,
-        plotOutput("scatterplot")
+        plotlyOutput("scatterplot") 
       )
     ),
+    
     fluidRow(
       box(
         width = 12,
@@ -160,16 +162,19 @@ server <- function(input, output) {
       theme_choice()
   })
   
-  output$scatterplot <- renderPlot({
+  output$scatterplot <- renderPlotly({
     x <- listings$price
     y <- listings$availability_365
     
-    ggplot(data.frame(x, y)) +
-      aes(x = x, y = y) +
-      geom_point() +
-      labs(x = "Price", y = "Availability on the next 365 days", title = "Price vs Availability") + 
-      theme_minimal()  # add the theme
+    plot_ly(data = data.frame(x, y), x = ~x, y = ~y, type = "scatter", mode = "markers") %>%
+      layout(
+        title = "Price vs Availability",
+        xaxis = list(title = "Price"),
+        yaxis = list(title = "Availability on the next 365 days"),
+        template = "plotly_white"
+      )
   })
+  
   
   filtered_listings <- reactive({
     if (length(input$neighbourhood_filter) == 0) {
